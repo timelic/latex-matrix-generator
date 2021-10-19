@@ -1,27 +1,59 @@
 <script setup>
-import { ref, onMounted } from "vue";
-const matrix = ref(new Array(30).fill(new Array(30).fill("")));
+import { ref, onMounted, watch } from "vue";
+import _ from "lodash";
+const matrix = ref(
+	new Array(30).fill().map(() => {
+		return new Array(30);
+	})
+);
 const exp = ref("");
+const exp_show = ref("");
 const getMatrix = () => {
-	// exp.value = "";
-	// let matrix_width = Math.sqrt(matrix.value.length);
-	// matrix.value.forEach((data, index) => {
-	// 	exp.value += String.raw`${data}`;
-	// 	exp.value += !((index + 1) % matrix_width) ? "\\\\" : " & ";
-	// });
-	// exp.value = String.raw`\begin{pmatrix}${exp.value}\end{pmatrix}`;
-	exp.value = String.raw`\begin{bmatrix}
-a_1 & a_2 & a_3 & a_4 \\
-b_1 & b_2 & b_3 & b_4 \\
-c_1 & c_2 & c_3 & c_4 \\
-d_1 & d_2 & d_3 & d_4
-\end{bmatrix} `;
+	let up = 100,
+		down = 0,
+		left = 100,
+		right = 0;
 	for (let i = 0; i < matrix.value.length; i++) {
 		for (let j = 0; j < matrix.value[0].length; j++) {
-			// if (matrix.value[i][j]) console.log(i, j);
+			if (matrix.value[i][j]) {
+				up = i < up ? i : up;
+				down = i > down ? i : down;
+				left = j < left ? j : left;
+				right = j > right ? j : right;
+			}
 		}
 	}
+	console.log("up=", up);
+	console.log("left=", left);
+	let matrix_min = matrix.value.slice(up, down + 1).map((row) => {
+		return row.slice(left, right + 1);
+	});
+	let core = [];
+	for (let row of matrix_min) {
+		core.push(
+			String.raw`${row
+				.map((item) => {
+					return item ? String.raw`${item}` : ` `;
+				})
+				.join(" & ")}`
+		);
+	}
+	exp.value = String.raw`\begin{bmatrix}${core.join("\\\\")}\end{bmatrix}`;
+	exp_show.value = String.raw`\begin{bmatrix}
+${core.join(
+	String.raw` \\
+`
+)}
+\end{bmatrix}`;
 };
+
+watch(
+	() => _.cloneDeep(matrix.value),
+	() => {
+		getMatrix();
+	}
+);
+
 onMounted(() => {
 	getMatrix();
 });
@@ -31,22 +63,30 @@ let hasCopied = ref(false);
 const copy = () => {
 	hasCopied.value = true;
 };
+
+import Clipboard from "clipboard";
+const btnCopy = new Clipboard("copy-btn");
+const copyValue = "hello world";
 </script>
 
 <template>
 	<button class="test" @click="getMatrix">生成矩阵</button>
 	<div class="matrix-wrap">
-		<div v-for="(row, i) in matrix" class="row">
-			<div v-for="(col, j) in row" class="block col">
+		<div v-for="(row, i) in matrix" :key="i" class="row">
+			<div v-for="(col, j) in row" :key="100 * i + j" class="block col">
 				<input spellcheck="false" v-model="matrix[i][j]" />
 			</div>
 		</div>
 		<div class="result">
 			<vue-latex class="tex" :expression="exp" display-mode />
 			<div class="code-wrap">
-				<div class="code">{{ exp }}</div>
+				<div class="code">{{ String(exp_show) }}</div>
 				<div class="copy-btn-wrap">
-					<button class="copy-btn" @click="copy">
+					<button
+						class="copy-btn"
+						@click="copy"
+						:data-clipboard-text="copyValue"
+					>
 						{{ hasCopied ? "Copied" : "Copy" }}
 					</button>
 				</div>
