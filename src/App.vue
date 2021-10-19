@@ -9,10 +9,7 @@ const matrix = ref(
 const exp = ref("");
 const exp_show = ref("");
 const getMatrix = () => {
-	let up = 100,
-		down = 0,
-		left = 100,
-		right = 0;
+	let [up, down, left, right] = [Infinity, 0, Infinity, 0];
 	for (let i = 0; i < matrix.value.length; i++) {
 		for (let j = 0; j < matrix.value[0].length; j++) {
 			if (matrix.value[i][j]) {
@@ -70,7 +67,6 @@ const copyValue = "hello world";
 </script>
 
 <template>
-	<button class="test" @click="getMatrix">生成矩阵</button>
 	<div class="matrix-wrap">
 		<div v-for="(row, i) in matrix" :key="i" class="row">
 			<div v-for="(col, j) in row" :key="100 * i + j" class="block col">
@@ -100,7 +96,6 @@ const copyValue = "hello world";
 body,
 html {
 	margin: 0;
-	/* overflow: auto !important; */
 }
 div,
 span,
@@ -164,7 +159,8 @@ input {
 }
 
 .code-wrap {
-	height: 60%;
+	height: 50%;
+	position: relative;
 }
 
 .tex {
@@ -172,12 +168,15 @@ input {
 	flex-direction: column;
 	justify-content: center;
 	width: 100%;
-	height: 40%;
+	height: 50%;
 }
 .code {
 	margin: 1rem;
+	margin-top: 0;
+	position: absolute;
+	bottom: 0;
 	box-shadow: inset 20px 20px 60px #d9d9d9, inset -20px -20px 60px #ffffff;
-	height: calc(100% - 2rem);
+	height: calc(100% - 1rem);
 	width: calc(100% - 2rem);
 	border-radius: 0.5rem;
 	padding: 1.5rem;
