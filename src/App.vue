@@ -152,10 +152,20 @@ const fontWidth = (text) => {
 	}
 };
 
+const inputMatrix = new Array(30).fill(null).map(() => {
+  return new Array(30);
+})
+
 // 回车跳到下一个
-const toNextRow = (localRow) => {
-	// 但是显然这样子是不行的
-	matrix.value[left][localRow + 1].focus();
+const toNextRow = (row, col) => {
+	// 但是，这样子就是行
+  if ((col += 1) >= inputMatrix[row].length) {
+    col = 0
+    if ((row += 1) >= inputMatrix.length) {
+      row = 0
+    }
+  }
+  inputMatrix[row][col].focus();
 };
 </script>
 
@@ -168,7 +178,8 @@ const toNextRow = (localRow) => {
 					spellcheck="false"
 					v-model="matrix[i][j]"
 					:style="fontWidth(matrix[i][j])"
-					@keyup.enter="toNextRow(i)"
+					@keyup.enter="toNextRow(i, j)"
+          :ref="el => { if (el) inputMatrix[i][j] = el }"
 				/>
 				<span
 					class="block-clear"
