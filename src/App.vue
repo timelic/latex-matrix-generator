@@ -19,23 +19,27 @@ const matrix = ref(
 	matrix.value[3][1],
 	matrix.value[3][2],
 	matrix.value[3][3],
+	matrix.value[4][4],
 ] = [
 	String.raw`a_i`,
 	String.raw`\vec v`,
 	String.raw`\sigma`,
 	String.raw`\star`,
-	String.raw`A`,
-	String.raw`e^x`,
-	String.raw`\sqrt0`,
 	String.raw`\infty`,
-	String.raw`xy`,
+	String.raw`e^\pi`,
+	String.raw`1`,
+	String.raw`2`,
+	String.raw`x`,
+	String.raw`\TeX`,
 ];
 
 // 转latex
 const exp = ref("");
 const exp_show = ref("");
+let hasCopied = ref(false); // 是否已经被复制
+let [up, down, left, right] = [Infinity, 0, Infinity, 0];
 const getMatrix = () => {
-	let [up, down, left, right] = [Infinity, 0, Infinity, 0];
+	// 找矩阵的左右前后
 	for (let i = 0; i < matrix.value.length; i++) {
 		for (let j = 0; j < matrix.value[0].length; j++) {
 			if (matrix.value[i][j]) {
@@ -46,9 +50,11 @@ const getMatrix = () => {
 			}
 		}
 	}
+	// 获取最小矩阵
 	let matrix_min = matrix.value.slice(up, down + 1).map((row) => {
 		return row.slice(left, right + 1);
 	});
+	// 生成无前后缀的latex代码
 	let core = [];
 	for (let row of matrix_min) {
 		core.push(
@@ -59,6 +65,7 @@ const getMatrix = () => {
 				.join(" & ")}`
 		);
 	}
+	// 生成完整latex和展示的代码
 	exp.value = String.raw`\begin{${styleNow.value}matrix}${core.join(
 		"\\\\"
 	)}\end{${styleNow.value}matrix}`;
@@ -68,6 +75,8 @@ ${core.join(
 `
 )}
 \end{${styleNow.value}matrix}`;
+	// copy复原
+	hasCopied.value = false;
 };
 
 watch(
@@ -89,7 +98,6 @@ const clear = () => {
 };
 
 // 复制代码
-let hasCopied = ref(false);
 import useClipboard from "vue-clipboard3";
 const { toClipboard } = useClipboard();
 const copy = async () => {
@@ -143,6 +151,12 @@ const fontWidth = (text) => {
 		}
 	}
 };
+
+// 回车跳到下一个
+const toNextRow = (localRow) => {
+	// 但是显然这样子是不行的
+	matrix.value[left][localRow + 1].focus();
+};
 </script>
 
 <template>
@@ -154,6 +168,7 @@ const fontWidth = (text) => {
 					spellcheck="false"
 					v-model="matrix[i][j]"
 					:style="fontWidth(matrix[i][j])"
+					@keyup.enter="toNextRow(i)"
 				/>
 				<span
 					class="block-clear"
@@ -167,11 +182,7 @@ const fontWidth = (text) => {
 			<div class="code-wrap">
 				<div class="code">{{ String(exp_show) }}</div>
 				<div class="copy-btn-wrap">
-					<button
-						class="copy-btn"
-						@click="copy"
-						:data-clipboard-text="copyValue"
-					>
+					<button class="copy-btn" @click="copy">
 						{{ hasCopied ? "Copied" : "Copy" }}
 					</button>
 				</div>

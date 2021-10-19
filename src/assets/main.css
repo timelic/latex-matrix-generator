@@ -221,3 +221,11 @@ button.about {
 .block:hover .block-clear {
 	opacity: 1;
 }
+
+input::selection,
+div::selection,
+span::selection {
+	color: #ffffff;
+	background-color: #e84893;
+	text-shadow: none;
+}
