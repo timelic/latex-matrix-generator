@@ -13,8 +13,8 @@
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^1.9.3",
-    "clipboard": "^2.0.8",
     "lodash": "^4.17.21",
-    "vite": "^2.6.4"
+    "vite": "^2.6.4",
+    "vue-clipboard3": "^1.0.1"
   }
 }

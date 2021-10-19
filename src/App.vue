@@ -1,11 +1,37 @@
 <script setup>
 import { ref, onMounted, watch } from "vue";
 import _ from "lodash";
+import "./assets/main.css";
 const matrix = ref(
 	new Array(30).fill().map(() => {
 		return new Array(30);
 	})
 );
+
+// 初始赋值
+[
+	matrix.value[1][1],
+	matrix.value[1][2],
+	matrix.value[1][3],
+	matrix.value[2][1],
+	matrix.value[2][2],
+	matrix.value[2][3],
+	matrix.value[3][1],
+	matrix.value[3][2],
+	matrix.value[3][3],
+] = [
+	String.raw`a_i`,
+	String.raw`\vec v`,
+	String.raw`\sigma`,
+	String.raw`\star`,
+	String.raw`A`,
+	String.raw`e^x`,
+	String.raw`\sqrt0`,
+	String.raw`\infty`,
+	String.raw`xy`,
+];
+
+// 转latex
 const exp = ref("");
 const exp_show = ref("");
 const getMatrix = () => {
@@ -20,8 +46,6 @@ const getMatrix = () => {
 			}
 		}
 	}
-	console.log("up=", up);
-	console.log("left=", left);
 	let matrix_min = matrix.value.slice(up, down + 1).map((row) => {
 		return row.slice(left, right + 1);
 	});
@@ -35,13 +59,15 @@ const getMatrix = () => {
 				.join(" & ")}`
 		);
 	}
-	exp.value = String.raw`\begin{bmatrix}${core.join("\\\\")}\end{bmatrix}`;
-	exp_show.value = String.raw`\begin{bmatrix}
+	exp.value = String.raw`\begin{${styleNow.value}matrix}${core.join(
+		"\\\\"
+	)}\end{${styleNow.value}matrix}`;
+	exp_show.value = String.raw`\begin{${styleNow.value}matrix}
 ${core.join(
 	String.raw` \\
 `
 )}
-\end{bmatrix}`;
+\end{${styleNow.value}matrix}`;
 };
 
 watch(
@@ -55,22 +81,85 @@ onMounted(() => {
 	getMatrix();
 });
 
+// 清空
+const clear = () => {
+	matrix.value = new Array(30).fill().map(() => {
+		return new Array(30);
+	});
+};
+
 // 复制代码
 let hasCopied = ref(false);
-const copy = () => {
+import useClipboard from "vue-clipboard3";
+const { toClipboard } = useClipboard();
+const copy = async () => {
+	await toClipboard(exp_show.value);
 	hasCopied.value = true;
 };
 
-import Clipboard from "clipboard";
-const btnCopy = new Clipboard("copy-btn");
-const copyValue = "hello world";
+// 换风格
+const showingStyles = ref(false);
+const styleNow = ref("b");
+const Styles = [
+	{
+		symbol: "",
+		letter: "",
+	},
+	{
+		symbol: "(",
+		letter: "p",
+	},
+	{
+		symbol: "[",
+		letter: "b",
+	},
+	{
+		symbol: "{",
+		letter: "B",
+	},
+	{
+		symbol: "|",
+		letter: "v",
+	},
+	{
+		symbol: "||",
+		letter: "V",
+	},
+];
+watch(styleNow, () => {
+	getMatrix();
+});
+
+// 跳转github
+const about = () => {
+	window.open("https://github.com/timelic/latex-matrix-generator", "_blank");
+};
+
+// 实现文字宽度自适应
+const fontWidth = (text) => {
+	if (text) {
+		if (text.length > 8) {
+			return `font-size: calc(var(--block-width) / ${text.length} * 2)`;
+		}
+	}
+};
 </script>
 
 <template>
+	<!-- <img src="./assets/LaTeX_logo.svg" id="logo" /> -->
 	<div class="matrix-wrap">
 		<div v-for="(row, i) in matrix" :key="i" class="row">
 			<div v-for="(col, j) in row" :key="100 * i + j" class="block col">
-				<input spellcheck="false" v-model="matrix[i][j]" />
+				<input
+					spellcheck="false"
+					v-model="matrix[i][j]"
+					:style="fontWidth(matrix[i][j])"
+				/>
+				<span
+					class="block-clear"
+					@click="matrix[i][j] = ''"
+					v-if="matrix[i][j]"
+				></span>
 			</div>
 		</div>
 		<div class="result">
@@ -89,134 +178,19 @@ const copyValue = "hello world";
 			</div>
 		</div>
 	</div>
+	<div class="btn-groups">
+		<button class="clear" @click="clear"></button>
+		<button
+			class="options"
+			@click="showingStyles = !showingStyles"
+		></button>
+		<button class="about" @click="about"></button>
+		<div class="matrix_style" v-if="showingStyles">
+			<button v-for="item in Styles" @click="styleNow = item.letter">
+				{{ item.symbol }}
+			</button>
+		</div>
+	</div>
 </template>
 
-<style>
-@import url("https://fonts.googleapis.com/css2?family=Roboto+Condensed:ital,wght@1,700&family=Ubuntu+Mono&display=swap");
-body,
-html {
-	margin: 0;
-}
-div,
-span,
-input {
-	box-sizing: border-box;
-	margin: 0;
-	padding: 0;
-}
-:root {
-	--block-width: 8rem;
-	--block-padding: 0rem;
-	--block-drak-color: rgb(235, 235, 235);
-}
-.block {
-	height: var(--block-width);
-	width: var(--block-width);
-	flex-shrink: 0;
-	padding: var(--block-padding);
-}
-.matrix-wrap {
-	/* height: calc(10 * var(--block-width)); */
-	width: calc(30 * var(--block-width));
-	/* width: 100vw; */
-	display: flex;
-	flex-wrap: wrap;
-}
-.matrix-wrap input {
-	background: none;
-	outline: none;
-	border: none;
-	height: 100%;
-	width: 100%;
-	text-align: center;
-	font-family: "Ubuntu Mono", monospace;
-	font-size: 2rem;
-}
-.row {
-	width: 100%;
-	display: flex;
-}
-
-.row:nth-of-type(odd) > .col:nth-of-type(odd),
-.row:nth-of-type(even) > .col:nth-of-type(even) {
-	background: var(--block-drak-color);
-}
-.result {
-	position: absolute;
-	height: 30rem;
-	width: 20rem;
-	background: white;
-	box-shadow: rgba(50, 50, 93, 0.25) 0px 50px 100px -20px,
-		rgba(0, 0, 0, 0.3) 0px 30px 60px -30px;
-	border-radius: 1rem;
-	right: 20vw;
-	top: 50%;
-	transform: translateY(-50%);
-}
-.katex-display {
-	margin: 0 !important;
-	text-align: center;
-}
-
-.code-wrap {
-	height: 50%;
-	position: relative;
-}
-
-.tex {
-	display: flex;
-	flex-direction: column;
-	justify-content: center;
-	width: 100%;
-	height: 50%;
-}
-.code {
-	margin: 1rem;
-	margin-top: 0;
-	position: absolute;
-	bottom: 0;
-	box-shadow: inset 20px 20px 60px #d9d9d9, inset -20px -20px 60px #ffffff;
-	height: calc(100% - 1rem);
-	width: calc(100% - 2rem);
-	border-radius: 0.5rem;
-	padding: 1.5rem;
-	font-family: "Ubuntu Mono", monospace;
-	font-size: 1.05rem;
-	white-space: pre-wrap;
-	line-height: 1.25rem;
-	color: rgb(9, 12, 19);
-}
-.copy-btn-wrap {
-	position: absolute;
-	bottom: 3rem;
-	display: flex;
-	justify-content: center;
-	width: 100%;
-}
-.copy-btn {
-	font-family: "Roboto Condensed", sans-serif;
-
-	background: white;
-	border: 1px solid rgb(235, 235, 235);
-	padding: 0.5rem 1rem;
-	border-radius: 1rem;
-	box-shadow: rgb(50 50 93 / 25%) 0px 13px 27px -5px,
-		rgb(0 0 0 / 20%) 6px 6px 17px -8px;
-	cursor: pointer;
-	color: rgb(107, 107, 107);
-	font-size: 1.25rem;
-	transition: 0.2s;
-}
-.copy-btn:hover {
-	color: rgb(0, 183, 255);
-	box-shadow: rgb(0 142 255 / 36%) 0px 15px 27px -5px,
-		rgb(0 154 255 / 20%) 6px 6px 17px -8px;
-}
-.copy-btn:active {
-	transform: scale(1.03);
-	transform-origin: 50% 50%;
-}
-.test {
-	position: fixed;
-}
-</style>
+<style></style>
