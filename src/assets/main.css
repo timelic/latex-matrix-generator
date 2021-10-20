@@ -229,3 +229,7 @@ span::selection {
 	background-color: #e84893;
 	text-shadow: none;
 }
+
+.katex {
+	font-family: KaTeX_Main, "Times New Roman", "Pingfang SC", "微软雅黑", serif;
+}
