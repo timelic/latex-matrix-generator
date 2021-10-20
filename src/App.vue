@@ -2,44 +2,24 @@
 import { ref, onMounted, watch } from "vue";
 import _ from "lodash";
 import "./assets/main.css";
-const matrix = ref(
-	new Array(30).fill().map(() => {
-		return new Array(30);
-	})
-);
+import { Styles, initialValueMap } from "./data";
+
+const matrix = ref(new Array(30).fill().map(() => new Array(30)));
 
 // 初始赋值
-[
-	matrix.value[1][1],
-	matrix.value[1][2],
-	matrix.value[1][3],
-	matrix.value[2][1],
-	matrix.value[2][2],
-	matrix.value[2][3],
-	matrix.value[3][1],
-	matrix.value[3][2],
-	matrix.value[3][3],
-	matrix.value[4][4],
-] = [
-	String.raw`a_i`,
-	String.raw`\vec v`,
-	String.raw`\sigma`,
-	String.raw`\star`,
-	String.raw`\infty`,
-	String.raw`e^\pi`,
-	String.raw`1`,
-	String.raw`2`,
-	String.raw`x`,
-	String.raw`\TeX`,
-];
+for (let index = 0; index < initialValueMap[0].length; index++) {
+	let [i, j] = initialValueMap[0][index];
+	matrix.value[i][j] = initialValueMap[1][index];
+}
 
 // 转latex
 const exp = ref("");
 const exp_show = ref("");
 let hasCopied = ref(false); // 是否已经被复制
 let [up, down, left, right] = [Infinity, 0, Infinity, 0];
-const getMatrix = () => {
+const findBorder = () => {
 	// 找矩阵的左右前后
+	[up, down, left, right] = [Infinity, 0, Infinity, 0];
 	for (let i = 0; i < matrix.value.length; i++) {
 		for (let j = 0; j < matrix.value[0].length; j++) {
 			if (matrix.value[i][j]) {
@@ -50,18 +30,20 @@ const getMatrix = () => {
 			}
 		}
 	}
+};
+const getMatrix = () => {
+	// 找矩阵的左右前后
+	findBorder();
 	// 获取最小矩阵
-	let matrix_min = matrix.value.slice(up, down + 1).map((row) => {
-		return row.slice(left, right + 1);
-	});
+	let matrix_min = matrix.value
+		.slice(up, down + 1)
+		.map((row) => row.slice(left, right + 1));
 	// 生成无前后缀的latex代码
 	let core = [];
 	for (let row of matrix_min) {
 		core.push(
 			String.raw`${row
-				.map((item) => {
-					return item ? String.raw`${item}` : ` `;
-				})
+				.map((item) => (item ? String.raw`${item}` : ` `))
 				.join(" & ")}`
 		);
 	}
@@ -92,10 +74,7 @@ onMounted(() => {
 
 // 清空
 const clear = () => {
-	matrix.value = new Array(30).fill().map(() => {
-		return new Array(30);
-	});
-	[up, down, left, right] = [Infinity, 0, Infinity, 0];
+	matrix.value = new Array(30).fill().map(() => new Array(30));
 };
 
 // 复制代码
@@ -109,32 +88,6 @@ const copy = async () => {
 // 换风格
 const showingStyles = ref(false);
 const styleNow = ref("b");
-const Styles = [
-	{
-		symbol: "",
-		letter: "",
-	},
-	{
-		symbol: "(",
-		letter: "p",
-	},
-	{
-		symbol: "[",
-		letter: "b",
-	},
-	{
-		symbol: "{",
-		letter: "B",
-	},
-	{
-		symbol: "|",
-		letter: "v",
-	},
-	{
-		symbol: "||",
-		letter: "V",
-	},
-];
 watch(styleNow, () => {
 	getMatrix();
 });
@@ -153,9 +106,7 @@ const fontWidth = (text) => {
 	}
 };
 
-const inputMatrix = new Array(30).fill(null).map(() => {
-	return new Array(30);
-});
+const inputMatrix = new Array(30).fill(null).map(() => new Array(30));
 
 // 回车跳到下一个
 const toNextRow = (row, col) => {
@@ -182,7 +133,7 @@ const toNextRow = (row, col) => {
 				/>
 				<span
 					class="block-clear"
-					@click="matrix[i][j] = ''"
+					@click="matrix[i][j] = null"
 					v-if="matrix[i][j]"
 				></span>
 			</div>
