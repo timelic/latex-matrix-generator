@@ -1,7 +1,36 @@
-# Vue 3 + Vite
+# LaTeX matrix generator
 
-This template should help get you started developing with Vue 3 in Vite. The template uses Vue 3 `<script setup>` SFCs, check out the [script setup docs](https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup) to learn more.
+LaTeX matrix generator with pure front-end implementation.
 
-## Recommended IDE Setup
+![image-20220102115854217](https://gitee.com/fetiss/img_clound/raw/master/img/2022/01/02/24498_image-20220102115854217.png)
 
-- [VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=johnsoncodehk.volar)
+## Features
+
+- Easy to use
+- Support multiple bracket styles
+- Automatic code generation
+- Theoretically supports infinite tables
+
+## How to use
+
++ Clone
+
+  ```
+  git clone https://github.com/timelic/latex-matrix-generator.git
+  ```
+
++ Install dependencies
+
+  ```
+  npm i
+  ```
+
++ Start server
+
+  ```
+  npm run dev
+  ```
+
+## Demo
+
+[Here](https://latex-matrix-generator.vercel.app/)'s a demo of the repo.
