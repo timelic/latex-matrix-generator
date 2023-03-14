@@ -7,7 +7,7 @@ html {
 div#app {
 	width: 100vw;
 	height: 100vh;
-	overflow: hidden;
+	overflow: overlay;
 }
 div,
 span,
@@ -18,7 +18,7 @@ textarea {
 	padding: 0;
 }
 :root {
-	--block-width: 8rem;
+	--block-width: 6rem;
 	--block-padding: 0rem;
 	--block-drak-color: rgb(235, 235, 235);
 }
@@ -42,7 +42,7 @@ textarea {
 	width: 100%;
 	text-align: center;
 	font-family: "Ubuntu Mono", monospace;
-	font-size: 2rem;
+	font-size: 1.5rem;
 	cursor: default;
 }
 .row {
@@ -55,7 +55,7 @@ textarea {
 	background: var(--block-drak-color);
 }
 .result {
-	position: absolute;
+	position: fixed;
 	height: 30rem;
 	width: 20rem;
 	max-height: 100vh;
